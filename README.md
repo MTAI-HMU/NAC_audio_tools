@@ -16,7 +16,7 @@ enc = em.DACEncoder()
 out = enc.encode(waves, sr=sr)       # waves: audio as [T], [B, T] or [B, C, T]
 out["codes"].plot()                  # any representation: .tensor, .shape, .fps, .plot()
 audio = enc.decode(out["codes"])     # [B, C, T] at the input's sample rate and length
-audio = enc.decode(out["latents"])   # continuous representations decode too
+audio = enc.decode(out["quantized_z"])  # or the decoder's continuous input
 ```
 
 See [example.py](example.py) for a tour and [batch_example.py](batch_example.py) for encoding a folder of audio files.
@@ -39,24 +39,69 @@ python -m pip install pytorch_lightning snac music2latent diffusers "git+https:/
 
 ## Models
 
-| Model | Load | Kind | Audio | Frame rate | Representations |
-| --- | --- | --- | --- | --- | --- |
-| [DAC](#dac) | `em.DACEncoder()` | RVQ codec | 44.1 kHz mono | 86.1 | `encoder_z` `latents` `codes` `quantized_z` |
-| [EnCodec](#encodec) 32 kHz (default)<br>`model_id="facebook/encodec_32khz"` | `em.EnCodecEncoder(model_id)` | RVQ codec | 32 kHz mono | 50 | `encoder_z` `codes` `quantized_z` |
-| [EnCodec](#encodec) 24 kHz<br>`model_id="facebook/encodec_24khz"` | `em.EnCodecEncoder(model_id)` | RVQ codec | 24 kHz mono | 75 | `encoder_z` `codes` `quantized_z` |
-| [SNAC](#snac) 44 kHz (default)<br>`model_id="hubertsiuzdak/snac_44khz"` | `em.SNACEncoder(model_id)` | multi-scale RVQ codec | 44.1 kHz mono | 14.4–114.8 | `encoder_z` `codes` `quantized_z` |
-| [SNAC](#snac) 32 kHz<br>`model_id="hubertsiuzdak/snac_32khz"` | `em.SNACEncoder(model_id)` | multi-scale RVQ codec | 32 kHz mono | 10.4–83.3 | `encoder_z` `codes` `quantized_z` |
-| [Stable Audio Open VAE](#sao) | `em.SAOEncoder()` | VAE | 44.1 kHz stereo | 21.5 | `mu` `std` `sample` |
-| [SAME-L](#same-l) | `em.SAMLEncoder()` | autoencoder | 44.1 kHz stereo | 10.8 | `pre_softnorm` `latent` |
-| [Music2Latent](#music2latent) | `em.Music2LatentEncoder()` | consistency autoencoder | 44.1 kHz mono | 10.8 | `features` `latent` |
-| [DACVAE](#dacvae) | `em.DACVAEEncoder()` | VAE | 48 kHz mono | 25 | `mu` `std` `sample` |
-| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `em.ACEStep15Encoder()` | VAE | 48 kHz stereo | 25 | `mu` `std` `sample` |
-| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `em.ACEStepDCAEEncoder()` | mel autoencoder + vocoder | 44.1 kHz stereo | 10.8 | `latent` |
-| [εar-VAE](#ear-vae) v2 48 kHz (default)<br>`variant="ear_vae_v2_48k"` | `em.EARVAEEncoder(variant)` | VAE | 48 kHz stereo | 50 | `mu` `std` `sample` |
-| [εar-VAE](#ear-vae) 44.1 kHz<br>`variant="ear_vae_44k"` | `em.EARVAEEncoder(variant)` | VAE | 44.1 kHz stereo | 43.1 | `mu` `std` `sample` |
+| Model | Load | Kind | Audio | Frame rate |
+| --- | --- | --- | --- | --- |
+| [DAC](#dac) | `em.DACEncoder()` | RVQ codec | 44.1 kHz mono | 86.1 |
+| [EnCodec](#encodec) 32 kHz (default) | `em.EnCodecEncoder()` | RVQ codec | 32 kHz mono | 50 |
+| [EnCodec](#encodec) 24 kHz | `em.EnCodecEncoder("facebook/encodec_24khz")` | RVQ codec | 24 kHz mono | 75 |
+| [SNAC](#snac) 44 kHz (default) | `em.SNACEncoder()` | multi-scale RVQ codec | 44.1 kHz mono | 14.4–114.8 |
+| [SNAC](#snac) 32 kHz | `em.SNACEncoder("hubertsiuzdak/snac_32khz")` | multi-scale RVQ codec | 32 kHz mono | 10.4–83.3 |
+| [Stable Audio Open VAE](#sao) | `em.SAOEncoder()` | VAE | 44.1 kHz stereo | 21.5 |
+| [SAME-L](#same-l) | `em.SAMLEncoder()` | autoencoder | 44.1 kHz stereo | 10.8 |
+| [Music2Latent](#music2latent) | `em.Music2LatentEncoder()` | consistency autoencoder | 44.1 kHz mono | 10.8 |
+| [DACVAE](#dacvae) | `em.DACVAEEncoder()` | VAE | 48 kHz mono | 25 |
+| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `em.ACEStep15Encoder()` | VAE | 48 kHz stereo | 25 |
+| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `em.ACEStepDCAEEncoder()` | mel autoencoder + vocoder | 44.1 kHz stereo | 10.8 |
+| [εar-VAE](#ear-vae) v2 48 kHz (default) | `em.EARVAEEncoder()` | VAE | 48 kHz stereo | 50 |
+| [εar-VAE](#ear-vae) 44.1 kHz | `em.EARVAEEncoder("ear_vae_44k")` | VAE | 44.1 kHz stereo | 43.1 |
 
 Frame rate is frames per second of the returned features. Every constructor also takes `device` (default `"cuda:0"`)
 and `batch_size` (default 8 for the codecs, 4 for the autoencoders, 1 for SAME-L).
+
+### Shapes and decoding
+
+| Model | Representation | Shape | Decodable |
+| --- | --- | --- | --- |
+| [DAC](#dac) | `encoder_z` | `[B, 1024, T]` | ✓ quantized first |
+| | `latents` | `[B, 72, T]` (9 codebooks × 8) | ✓ quantized first |
+| | `codes` | `[B, 9, T]` | **✓ default** |
+| | `quantized_z` | `[B, 1024, T]` | ✓ |
+| [EnCodec](#encodec) | `encoder_z` | `[B, 128, T]` | ✓ quantized first |
+| | `codes` | `[B, 4, T]` at 32 kHz<br>`[B, 32, T]` at 24 kHz | **✓ default** |
+| | `quantized_z` | `[B, 128, T]` | ✓ |
+| [SNAC](#snac) | `encoder_z` | `[B, 1024, T]` | ✓ quantized first |
+| | `codes` | `[B, 4, T]` (4 levels) | **✓ default** |
+| | `quantized_z` | `[B, 1024, T]` | ✓ |
+| [Stable Audio Open VAE](#sao) | `mu` | `[B, 64, T]` | **✓ default** |
+| | `std` | `[B, 64, T]` | ✗ |
+| | `sample` | `[B, 64, T]` | ✓ |
+| [SAME-L](#same-l) | `pre_softnorm` | `[B, 256, T]` | ✓ normalized first |
+| | `latent` | `[B, 256, T]` | **✓ default** |
+| [Music2Latent](#music2latent) | `features` | `[B, 8192, T]` | ✗ |
+| | `latent` | `[B, 64, T]` | **✓ default** |
+| [DACVAE](#dacvae) | `mu` | `[B, 128, T]` | **✓ default** |
+| | `std` | `[B, 128, T]` | ✗ |
+| | `sample` | `[B, 128, T]` | ✓ |
+| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `mu` | `[B, 64, T]` | **✓ default** |
+| | `std` | `[B, 64, T]` | ✗ |
+| | `sample` | `[B, 64, T]` | ✓ |
+| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `latent` | `[B, 128, T]` (8 × 16, flattened) | **✓ default** |
+| [εar-VAE](#ear-vae) | `mu` | `[B, 64, T]` | **✓ default** |
+| | `std` | `[B, 64, T]` | ✗ |
+| | `sample` | `[B, 64, T]` | ✓ |
+
+**Shape** is `.tensor.shape`: B clips, D dimensions, T frames at the frame rate (for SNAC, its finest rate).
+Both variants of a model share these shapes, except EnCodec's `codes`.
+
+**Decodable** says what `enc.decode()` does with that representation:
+
+- **✓** The model's own decoder takes it as it is. **✓ default** is the one used when you pass the whole `encode()`
+  output.
+- **✓ quantized first** The model can't decode it directly. `decode()` first snaps it to the codebook, the same step
+  that produces `codes`, then decodes that. The audio is the same as decoding `codes`, not a more detailed version.
+- **✓ normalized first** SAME-L's decoder takes `latent` only. `decode()` first runs `pre_softnorm` through the model's
+  SoftNorm, which turns it into `latent`, so the audio is the same as decoding `latent`.
+- **✗** Can't be decoded; `decode()` raises a `ValueError`.
 
 ## API
 
@@ -131,7 +176,8 @@ em.DACEncoder()                                     # 44.1 kHz model (default)
 em.DACEncoder(weights="path/to/weights_44khz.pth")  # a local 44.1 kHz checkpoint
 ```
 - `encoder_z` [B, 1024, T] · `latents` [B, 72, T] (9 codebooks × 8) · `codes` [B, 9, T] · `quantized_z` [B, 1024, T]
-- Decodes from any of them. Default: `codes`.
+- Decodes from `codes` or `quantized_z`. Default: `codes`.
+- `encoder_z` and `latents` decode too, but are quantized first, so they give the same audio as `codes`.
 
 <a id="encodec"></a>
 ### [EnCodec](https://github.com/kadirnar/awesome-codec-architectures#encodec)
@@ -142,7 +188,8 @@ em.EnCodecEncoder(model_id="facebook/encodec_24khz")    # 24 kHz general-audio m
 ```
 - `encoder_z` [B, 128, T] · `codes` [B, Q, T] · `quantized_z` [B, 128, T]
 - Encodes at the highest bandwidth: Q = 4 codebooks at 32 kHz, 32 at 24 kHz.
-- Decodes from any of them. Default: `codes`.
+- Decodes from `codes` or `quantized_z`. Default: `codes`.
+- `encoder_z` decodes too, but is quantized first, so it gives the same audio as `codes`.
 - The 48 kHz stereo model encodes in normalized 1 s chunks and is not supported.
 
 <a id="snac"></a>
@@ -155,7 +202,8 @@ em.SNACEncoder(model_id="hubertsiuzdak/snac_32khz")   # 32 kHz music model
 - `encoder_z` [B, 1024, T] · `codes` [B, 4, T] · `quantized_z` [B, 1024, T]
 - `codes` stacks 4 levels, coarse to fine. Level *i* has 8, 4, 2, 1 times fewer frames and is repeated to the
   finest rate, so `codes[:, i, ::stride]` recovers it.
-- Decodes from any of them. Default: `codes`. The decoder adds noise, so it is seeded per item.
+- Decodes from `codes` or `quantized_z`. Default: `codes`. The decoder adds noise, so it is seeded per item.
+- `encoder_z` decodes too, but is quantized first, so it gives the same audio as `codes`.
 
 <a id="sao"></a>
 ### [Stable Audio Open VAE](https://github.com/kadirnar/awesome-codec-architectures#stable-audio-autoencoder)
@@ -176,7 +224,8 @@ em.SAMLEncoder()                                  # fp16 on CUDA, one clip at a 
 em.SAMLEncoder(half=False, batch_size=4)          # fp32: batch-invariant, ~3.4 GB of weights
 ```
 - `pre_softnorm` [B, 256, T] (before SoftNorm) · `latent` [B, 256, T]
-- Decodes from either. Default: `latent`. The decoder draws random numbers, so it is seeded per item.
+- Decodes from `latent`. The decoder draws random numbers, so it is seeded per item.
+- `pre_softnorm` decodes too, but goes through SoftNorm first, so it gives the same audio as `latent`.
 - Encoding is deterministic: the train-time mask noise is off.
 - fp16 results shift by about 1% with `batch_size`, hence the default of 1. Use `half=False` for larger batches.
 
