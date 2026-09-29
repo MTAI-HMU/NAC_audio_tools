@@ -1,0 +1,649 @@
+{
+ "source": "source.wav",
+ "source_name": "1_rock_87_beat_4-4.wav",
+ "sample_rate": 44100,
+ "seconds": 6.0,
+ "models": [
+  {
+   "name": "DAC",
+   "source": "em.DACEncoder()",
+   "kind": "RVQ codec",
+   "audio": "44.1 kHz mono",
+   "anchor": "#dac",
+   "slug": "dac",
+   "default": "codes",
+   "channels": 1,
+   "sample_rate": 44100,
+   "plot": "dac.png",
+   "recon": "dac-recon.mp3",
+   "seconds": 6.3,
+   "reps": [
+    {
+     "name": "encoder_z",
+     "shape": [
+      1,
+      1024,
+      517
+     ],
+     "fps": 86.13,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "latents",
+     "shape": [
+      1,
+      72,
+      517
+     ],
+     "fps": 86.13,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "codes",
+     "shape": [
+      1,
+      9,
+      517
+     ],
+     "fps": 86.13,
+     "codes": true,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "quantized_z",
+     "shape": [
+      1,
+      1024,
+      517
+     ],
+     "fps": 86.13,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "EnCodec 32 kHz",
+   "source": "em.EnCodecEncoder()",
+   "kind": "RVQ codec",
+   "audio": "32 kHz mono",
+   "anchor": "#encodec",
+   "slug": "encodec-32-khz",
+   "default": "codes",
+   "channels": 1,
+   "sample_rate": 32000,
+   "plot": "encodec-32-khz.png",
+   "recon": "encodec-32-khz-recon.mp3",
+   "seconds": 3.6,
+   "reps": [
+    {
+     "name": "encoder_z",
+     "shape": [
+      1,
+      128,
+      300
+     ],
+     "fps": 50.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "codes",
+     "shape": [
+      1,
+      4,
+      300
+     ],
+     "fps": 50.0,
+     "codes": true,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "quantized_z",
+     "shape": [
+      1,
+      128,
+      300
+     ],
+     "fps": 50.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "EnCodec 24 kHz",
+   "source": "em.EnCodecEncoder(\"facebook/encodec_24khz\")",
+   "kind": "RVQ codec",
+   "audio": "24 kHz mono",
+   "anchor": "#encodec",
+   "slug": "encodec-24-khz",
+   "default": "codes",
+   "channels": 1,
+   "sample_rate": 24000,
+   "plot": "encodec-24-khz.png",
+   "recon": "encodec-24-khz-recon.mp3",
+   "seconds": 2.2,
+   "reps": [
+    {
+     "name": "encoder_z",
+     "shape": [
+      1,
+      128,
+      450
+     ],
+     "fps": 75.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "codes",
+     "shape": [
+      1,
+      32,
+      450
+     ],
+     "fps": 75.0,
+     "codes": true,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "quantized_z",
+     "shape": [
+      1,
+      128,
+      450
+     ],
+     "fps": 75.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "SNAC 44 kHz",
+   "source": "em.SNACEncoder()",
+   "kind": "multi-scale RVQ codec",
+   "audio": "44.1 kHz mono",
+   "anchor": "#snac",
+   "slug": "snac-44-khz",
+   "default": "codes",
+   "channels": 1,
+   "sample_rate": 44100,
+   "plot": "snac-44-khz.png",
+   "recon": "snac-44-khz-recon.mp3",
+   "seconds": 3.1,
+   "reps": [
+    {
+     "name": "encoder_z",
+     "shape": [
+      1,
+      1024,
+      704
+     ],
+     "fps": 114.84,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "codes",
+     "shape": [
+      1,
+      4,
+      704
+     ],
+     "fps": 114.84,
+     "codes": true,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "quantized_z",
+     "shape": [
+      1,
+      1024,
+      704
+     ],
+     "fps": 114.84,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "SNAC 32 kHz",
+   "source": "em.SNACEncoder(\"hubertsiuzdak/snac_32khz\")",
+   "kind": "multi-scale RVQ codec",
+   "audio": "32 kHz mono",
+   "anchor": "#snac",
+   "slug": "snac-32-khz",
+   "default": "codes",
+   "channels": 1,
+   "sample_rate": 32000,
+   "plot": "snac-32-khz.png",
+   "recon": "snac-32-khz-recon.mp3",
+   "seconds": 2.6,
+   "reps": [
+    {
+     "name": "encoder_z",
+     "shape": [
+      1,
+      1024,
+      512
+     ],
+     "fps": 83.33,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "codes",
+     "shape": [
+      1,
+      4,
+      512
+     ],
+     "fps": 83.33,
+     "codes": true,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "quantized_z",
+     "shape": [
+      1,
+      1024,
+      512
+     ],
+     "fps": 83.33,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "Stable Audio Open VAE",
+   "source": "em.SAOEncoder()",
+   "kind": "VAE",
+   "audio": "44.1 kHz stereo",
+   "anchor": "#sao",
+   "slug": "stable-audio-open-vae",
+   "default": "mu",
+   "channels": 2,
+   "sample_rate": 44100,
+   "plot": "stable-audio-open-vae.png",
+   "recon": "stable-audio-open-vae-recon.mp3",
+   "seconds": 4.5,
+   "reps": [
+    {
+     "name": "mu",
+     "shape": [
+      1,
+      64,
+      130
+     ],
+     "fps": 21.53,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "std",
+     "shape": [
+      1,
+      64,
+      130
+     ],
+     "fps": 21.53,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "sample",
+     "shape": [
+      1,
+      64,
+      130
+     ],
+     "fps": 21.53,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "SAME-L",
+   "source": "em.SAMLEncoder()",
+   "kind": "autoencoder",
+   "audio": "44.1 kHz stereo",
+   "anchor": "#same-l",
+   "slug": "same-l",
+   "default": "latent",
+   "channels": 2,
+   "sample_rate": 44100,
+   "plot": "same-l.png",
+   "recon": "same-l-recon.mp3",
+   "seconds": 8.3,
+   "reps": [
+    {
+     "name": "pre_softnorm",
+     "shape": [
+      1,
+      256,
+      65
+     ],
+     "fps": 10.77,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    },
+    {
+     "name": "latent",
+     "shape": [
+      1,
+      256,
+      65
+     ],
+     "fps": 10.77,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    }
+   ]
+  },
+  {
+   "name": "Music2Latent",
+   "source": "em.Music2LatentEncoder()",
+   "kind": "consistency autoencoder",
+   "audio": "44.1 kHz mono",
+   "anchor": "#music2latent",
+   "slug": "music2latent",
+   "default": "latent",
+   "channels": 1,
+   "sample_rate": 44100,
+   "plot": "music2latent.png",
+   "recon": "music2latent-recon.mp3",
+   "seconds": 2.1,
+   "reps": [
+    {
+     "name": "features",
+     "shape": [
+      1,
+      8192,
+      65
+     ],
+     "fps": 10.77,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "latent",
+     "shape": [
+      1,
+      64,
+      65
+     ],
+     "fps": 10.77,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    }
+   ]
+  },
+  {
+   "name": "DACVAE",
+   "source": "em.DACVAEEncoder()",
+   "kind": "VAE",
+   "audio": "48 kHz mono",
+   "anchor": "#dacvae",
+   "slug": "dacvae",
+   "default": "mu",
+   "channels": 1,
+   "sample_rate": 48000,
+   "plot": "dacvae.png",
+   "recon": "dacvae-recon.mp3",
+   "seconds": 4.1,
+   "reps": [
+    {
+     "name": "mu",
+     "shape": [
+      1,
+      128,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "std",
+     "shape": [
+      1,
+      128,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "sample",
+     "shape": [
+      1,
+      128,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "ACE-Step 1.5 VAE",
+   "source": "em.ACEStep15Encoder()",
+   "kind": "VAE",
+   "audio": "48 kHz stereo",
+   "anchor": "#ace-step-15-vae",
+   "slug": "ace-step-15-vae",
+   "default": "mu",
+   "channels": 2,
+   "sample_rate": 48000,
+   "plot": "ace-step-15-vae.png",
+   "recon": "ace-step-15-vae-recon.mp3",
+   "seconds": 3.0,
+   "reps": [
+    {
+     "name": "mu",
+     "shape": [
+      1,
+      64,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "std",
+     "shape": [
+      1,
+      64,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "sample",
+     "shape": [
+      1,
+      64,
+      150
+     ],
+     "fps": 25.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "ACE-Step v1 music DCAE",
+   "source": "em.ACEStepDCAEEncoder()",
+   "kind": "mel autoencoder + vocoder",
+   "audio": "44.1 kHz stereo",
+   "anchor": "#ace-step-v1-music-dcae",
+   "slug": "ace-step-v1-music-dcae",
+   "default": "latent",
+   "channels": 2,
+   "sample_rate": 44100,
+   "plot": "ace-step-v1-music-dcae.png",
+   "recon": "ace-step-v1-music-dcae-recon.mp3",
+   "seconds": 3.4,
+   "reps": [
+    {
+     "name": "latent",
+     "shape": [
+      1,
+      128,
+      65
+     ],
+     "fps": 10.77,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    }
+   ]
+  },
+  {
+   "name": "\u03b5ar-VAE v2 48 kHz",
+   "source": "em.EARVAEEncoder()",
+   "kind": "VAE",
+   "audio": "48 kHz stereo",
+   "anchor": "#ear-vae",
+   "slug": "ear-vae-v2-48-khz",
+   "default": "mu",
+   "channels": 2,
+   "sample_rate": 48000,
+   "plot": "ear-vae-v2-48-khz.png",
+   "recon": "ear-vae-v2-48-khz-recon.mp3",
+   "seconds": 3.3,
+   "reps": [
+    {
+     "name": "mu",
+     "shape": [
+      1,
+      64,
+      300
+     ],
+     "fps": 50.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "std",
+     "shape": [
+      1,
+      64,
+      300
+     ],
+     "fps": 50.0,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "sample",
+     "shape": [
+      1,
+      64,
+      300
+     ],
+     "fps": 50.0,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  },
+  {
+   "name": "\u03b5ar-VAE 44.1 kHz",
+   "source": "em.EARVAEEncoder(\"ear_vae_44k\")",
+   "kind": "VAE",
+   "audio": "44.1 kHz stereo",
+   "anchor": "#ear-vae",
+   "slug": "ear-vae-441-khz",
+   "default": "mu",
+   "channels": 2,
+   "sample_rate": 44100,
+   "plot": "ear-vae-441-khz.png",
+   "recon": "ear-vae-441-khz-recon.mp3",
+   "seconds": 3.0,
+   "reps": [
+    {
+     "name": "mu",
+     "shape": [
+      1,
+      64,
+      259
+     ],
+     "fps": 43.07,
+     "codes": false,
+     "decodable": "yes",
+     "default": true
+    },
+    {
+     "name": "std",
+     "shape": [
+      1,
+      64,
+      259
+     ],
+     "fps": 43.07,
+     "codes": false,
+     "decodable": "no",
+     "default": false
+    },
+    {
+     "name": "sample",
+     "shape": [
+      1,
+      64,
+      259
+     ],
+     "fps": 43.07,
+     "codes": false,
+     "decodable": "yes",
+     "default": false
+    }
+   ]
+  }
+ ],
+ "built": "2026-09-29"
+}

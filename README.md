@@ -1,5 +1,8 @@
 # NAC audio tools
 
+**[▶ Listen to every model](https://mtai-hmu.github.io/NAC_audio_tools/)** — plots and decoded audio for all 13
+encoders, built by [build_site.py](build_site.py).
+
 Paper, code and weights for every model: [awesome-codec-architectures](https://github.com/kadirnar/awesome-codec-architectures).
 
 Batched, plot-ready **encode / decode** for neural audio codecs (NACs) and audio VAEs, behind one interface.
@@ -102,6 +105,64 @@ Both variants of a model share these shapes, except EnCodec's `codes`.
 - **✓ normalized first** SAME-L's decoder takes `latent` only. `decode()` first runs `pre_softnorm` through the model's
   SoftNorm, which turns it into `latent`, so the audio is the same as decoding `latent`.
 - **✗** Can't be decoded; `decode()` raises a `ValueError`.
+
+### Value ranges
+
+Nothing is normalized: every representation is the model's own output on the model's own scale. Measured on one
+6-second stereo drum clip (`1_rock_87_beat_4-4.wav`, Groove MIDI Dataset), as a sanity check for your own
+features rather than fixed bounds — other audio moves these numbers.
+
+| Model | Representation | min | max | mean | sd |
+| --- | --- | --- | --- | --- | --- |
+| [DAC](#dac) | `encoder_z` | −12.42 | 11.92 | 0.01 | 2.50 |
+| | `latents` | −13.71 | 13.04 | −0.06 | 2.95 |
+| | `codes` | 1 | 1023 | — | — |
+| | `quantized_z` | −19.23 | 16.96 | 0.04 | 3.65 |
+| [EnCodec](#encodec) 32 kHz | `encoder_z` | −12.57 | 15.25 | −0.12 | 2.57 |
+| | `codes` | 8 | 2044 | — | — |
+| | `quantized_z` | −12.57 | 13.74 | −0.10 | 2.46 |
+| [EnCodec](#encodec) 24 kHz | `encoder_z` | −16.48 | 20.81 | −0.53 | 4.51 |
+| | `codes` | 0 | 1023 | — | — |
+| | `quantized_z` | −16.65 | 20.77 | −0.53 | 4.51 |
+| [SNAC](#snac) 44 kHz | `encoder_z` | −44.36 | 67.42 | −0.01 | 2.94 |
+| | `codes` | 9 | 4085 | — | — |
+| | `quantized_z` | −26.76 | 24.43 | −0.01 | 2.46 |
+| [SNAC](#snac) 32 kHz | `encoder_z` | −34.78 | 71.89 | −0.03 | 2.88 |
+| | `codes` | 2 | 4090 | — | — |
+| | `quantized_z` | −26.42 | 24.23 | −0.02 | 2.45 |
+| [Stable Audio Open VAE](#sao) | `mu` | −3.82 | 4.75 | −0.06 | 0.86 |
+| | `std` | 0.0059 | 0.2401 | 0.0840 | 0.042 |
+| [SAME-L](#same-l) | `pre_softnorm` | −0.27 | 0.28 | 0.00 | 0.057 |
+| | `latent` | −3.13 | 3.14 | −0.03 | 0.63 |
+| [Music2Latent](#music2latent) | `features` | −9.21 | 7.83 | −0.02 | 0.98 |
+| | `latent` | −3.49 | 3.21 | −0.14 | 0.99 |
+| [DACVAE](#dacvae) | `mu` | −3.16 | 2.81 | 0.04 | 0.67 |
+| | `std` | 0.0017 | 0.0072 | 0.0035 | 0.001 |
+| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `mu` | −3.24 | 2.86 | −0.06 | 0.83 |
+| | `std` | 0.00011 | 0.00196 | 0.00036 | <0.001 |
+| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `latent` | −3.19 | 2.06 | −0.17 | 0.72 |
+| [εar-VAE](#ear-vae) v2 48 kHz | `mu` | −5.11 | 3.74 | −0.02 | 0.56 |
+| | `std` | 0.00002 | 0.00065 | 0.00011 | <0.001 |
+| [εar-VAE](#ear-vae) 44.1 kHz | `mu` | −4.12 | 5.71 | 0.05 | 0.89 |
+| | `std` | 0.00003 | 0.00082 | 0.00019 | <0.001 |
+
+`sample` is left out: it is `mu + std × noise`, and `std` is small enough that its range matches `mu` to two
+decimals everywhere except SAO.
+
+Three things this table shows:
+
+- **Scales differ by model, so latents are not comparable across models.** εar-VAE sits at sd 0.56 and DAC's
+  `quantized_z` at 3.65, about 6× apart. Standardize per model before feeding several into the same downstream
+  model, distance or shared colour scale.
+- **`codes` are raw codebook indices**, not rescaled. The full range is 0 to codebook size − 1: 1024 for DAC and
+  EnCodec 24 kHz, 2048 for EnCodec 32 kHz, 4096 for SNAC. The min and max above are just what this clip used.
+- **`std` is tiny for ACE-Step 1.5 and εar-VAE**, about 0.02–0.05% of `mu`, so their `sample` is nearly `mu`.
+  SAO is the one model with a substantial posterior width, about 10% of `mu`.
+
+The only representation carrying a scaling factor is ACE-Step v1 DCAE's `latent`, which has upstream MusicDCAE's
+shift and scale applied, matching what `MusicDCAE.encode` returns. Everything else is the bare encoder output,
+except that `std` is `softplus(scale)`, the standard deviation in natural units rather than the raw parameter.
+Audio going in is resampled and padded, never peak- or loudness-normalized.
 
 ## API
 

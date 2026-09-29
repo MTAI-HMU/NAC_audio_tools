@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NAC audio tools — Easy demo listening page</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #fbfaf8; --card: #ffffff; --ink: #1a1a19; --muted: #6a6862; --line: #e4e1da;
+  --accent: #7a4b2a; --chip: #f1eee8; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16161a; --card: #1e1e23; --ink: #ecebe8; --muted: #a3a09a; --line: #2e2e35;
+          --accent: #e0a06a; --chip: #26262d; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px 80px; }
+header { padding: 56px 0 28px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
+h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.02em; }
+h1 .thin { color: var(--muted); font-weight: 400; }
+.lede { color: var(--muted); max-width: 70ch; margin: 0 0 18px; }
+a { color: var(--accent); }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chip { background: var(--chip); border: 1px solid var(--line); border-radius: 999px;
+        padding: 4px 11px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.chip:hover { color: var(--ink); border-color: var(--accent); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+        margin: 0 0 14px; scroll-margin-top: 16px; }
+.card > summary { cursor: pointer; list-style: none; padding: 16px 22px; display: flex; gap: 6px 14px;
+                  align-items: baseline; flex-wrap: wrap; border-radius: 14px; }
+.card > summary::-webkit-details-marker { display: none; }
+.card > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 18px;
+                         font-family: var(--mono); }
+.card[open] > summary::after { content: "−"; }
+.card > summary:hover { background: var(--chip); }
+.card > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.card .body { padding: 4px 22px 22px; }
+.sname { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+.smeta { color: var(--muted); font-size: 13.5px; }
+.bar { display: flex; gap: 10px; align-items: center; margin: 0 0 16px; }
+.btn { background: var(--chip); border: 1px solid var(--line); color: var(--ink); border-radius: 8px;
+       padding: 6px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn:hover { border-color: var(--accent); }
+.meta { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+.meta .sep { opacity: 0.45; padding: 0 7px; }
+pre { background: var(--chip); border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+      overflow-x: auto; margin: 0 0 16px; }
+pre code { font-size: 13px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 4px 0 18px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 500; font-size: 12.5px; text-transform: uppercase;
+     letter-spacing: 0.04em; }
+.tick { color: var(--accent); }
+td.tick { white-space: nowrap; }
+.no { color: var(--muted); }
+.qual { color: var(--muted); font-size: 12px; }
+img { width: 100%; height: auto; border-radius: 9px; border: 1px solid var(--line); display: block; }
+audio { width: 100%; margin: 6px 0 2px; }
+.players { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.player h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+             margin: 0 0 4px; font-weight: 500; }
+figure { margin: 0 0 4px; }
+figcaption { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 22px; }
+@media (max-width: 560px) { header { padding-top: 34px; } h1 { font-size: 24px; } .card { padding: 18px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>NAC audio tools <span class="thin">— Easy demo listening page</span></h1>
+  <div class="players">
+    <div class="player"><h3>Source — 1_rock_87_beat_4-4.wav</h3>
+      <audio controls preload="none" src="assets/source.wav?v=1790676718"></audio></div>
+  </div>
+  <div class="chips"><a class="chip" href="#dac">DAC</a>
+<a class="chip" href="#encodec-32-khz">EnCodec 32 kHz</a>
+<a class="chip" href="#encodec-24-khz">EnCodec 24 kHz</a>
+<a class="chip" href="#snac-44-khz">SNAC 44 kHz</a>
+<a class="chip" href="#snac-32-khz">SNAC 32 kHz</a>
+<a class="chip" href="#stable-audio-open-vae">Stable Audio Open VAE</a>
+<a class="chip" href="#same-l">SAME-L</a>
+<a class="chip" href="#music2latent">Music2Latent</a>
+<a class="chip" href="#dacvae">DACVAE</a>
+<a class="chip" href="#ace-step-15-vae">ACE-Step 1.5 VAE</a>
+<a class="chip" href="#ace-step-v1-music-dcae">ACE-Step v1 music DCAE</a>
+<a class="chip" href="#ear-vae-v2-48-khz">εar-VAE v2 48 kHz</a>
+<a class="chip" href="#ear-vae-441-khz">εar-VAE 44.1 kHz</a></div>
+</header>
+<div class="bar">
+  <button class="btn" id="expand">Expand all</button>
+  <button class="btn" id="collapse">Collapse all</button>
+</div>
+<details class="card" id="dac">
+  <summary><span class="sname">DAC</span>
+    <span class="smeta">RVQ codec<span class="sep">·</span>44.1 kHz mono<span class="sep">·</span>
+    4 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>codes</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#dac">details</a></p>
+  <pre><code>em.DACEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>encoder_z</code></td><td class="mono">[1, 1024, 517]</td><td>86.13</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>latents</code></td><td class="mono">[1, 72, 517]</td><td>86.13</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>codes</code> <em>(default)</em></td><td class="mono">[1, 9, 517]</td><td>86.13</td><td class="tick">✓</td></tr>
+      <tr><td><code>quantized_z</code></td><td class="mono">[1, 1024, 517]</td><td>86.13</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/dac.png?v=1790676718" alt="DAC representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/dac-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="encodec-32-khz">
+  <summary><span class="sname">EnCodec 32 kHz</span>
+    <span class="smeta">RVQ codec<span class="sep">·</span>32 kHz mono<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>codes</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#encodec">details</a></p>
+  <pre><code>em.EnCodecEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>encoder_z</code></td><td class="mono">[1, 128, 300]</td><td>50.00</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>codes</code> <em>(default)</em></td><td class="mono">[1, 4, 300]</td><td>50.00</td><td class="tick">✓</td></tr>
+      <tr><td><code>quantized_z</code></td><td class="mono">[1, 128, 300]</td><td>50.00</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/encodec-32-khz.png?v=1790676718" alt="EnCodec 32 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/encodec-32-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="encodec-24-khz">
+  <summary><span class="sname">EnCodec 24 kHz</span>
+    <span class="smeta">RVQ codec<span class="sep">·</span>24 kHz mono<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>codes</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#encodec">details</a></p>
+  <pre><code>em.EnCodecEncoder("facebook/encodec_24khz")</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>encoder_z</code></td><td class="mono">[1, 128, 450]</td><td>75.00</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>codes</code> <em>(default)</em></td><td class="mono">[1, 32, 450]</td><td>75.00</td><td class="tick">✓</td></tr>
+      <tr><td><code>quantized_z</code></td><td class="mono">[1, 128, 450]</td><td>75.00</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/encodec-24-khz.png?v=1790676718" alt="EnCodec 24 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/encodec-24-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="snac-44-khz">
+  <summary><span class="sname">SNAC 44 kHz</span>
+    <span class="smeta">multi-scale RVQ codec<span class="sep">·</span>44.1 kHz mono<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>codes</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#snac">details</a></p>
+  <pre><code>em.SNACEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>encoder_z</code></td><td class="mono">[1, 1024, 704]</td><td>114.84</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>codes</code> <em>(default)</em></td><td class="mono">[1, 4, 704]</td><td>114.84</td><td class="tick">✓</td></tr>
+      <tr><td><code>quantized_z</code></td><td class="mono">[1, 1024, 704]</td><td>114.84</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/snac-44-khz.png?v=1790676718" alt="SNAC 44 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/snac-44-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="snac-32-khz">
+  <summary><span class="sname">SNAC 32 kHz</span>
+    <span class="smeta">multi-scale RVQ codec<span class="sep">·</span>32 kHz mono<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>codes</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#snac">details</a></p>
+  <pre><code>em.SNACEncoder("hubertsiuzdak/snac_32khz")</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>encoder_z</code></td><td class="mono">[1, 1024, 512]</td><td>83.33</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>codes</code> <em>(default)</em></td><td class="mono">[1, 4, 512]</td><td>83.33</td><td class="tick">✓</td></tr>
+      <tr><td><code>quantized_z</code></td><td class="mono">[1, 1024, 512]</td><td>83.33</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/snac-32-khz.png?v=1790676718" alt="SNAC 32 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/snac-32-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="stable-audio-open-vae">
+  <summary><span class="sname">Stable Audio Open VAE</span>
+    <span class="smeta">VAE<span class="sep">·</span>44.1 kHz stereo<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>mu</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#sao">details</a></p>
+  <pre><code>em.SAOEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>mu</code> <em>(default)</em></td><td class="mono">[1, 64, 130]</td><td>21.53</td><td class="tick">✓</td></tr>
+      <tr><td><code>std</code></td><td class="mono">[1, 64, 130]</td><td>21.53</td><td class="no">—</td></tr>
+      <tr><td><code>sample</code></td><td class="mono">[1, 64, 130]</td><td>21.53</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/stable-audio-open-vae.png?v=1790676718" alt="Stable Audio Open VAE representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/stable-audio-open-vae-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="same-l">
+  <summary><span class="sname">SAME-L</span>
+    <span class="smeta">autoencoder<span class="sep">·</span>44.1 kHz stereo<span class="sep">·</span>
+    2 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>latent</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#same-l">details</a></p>
+  <pre><code>em.SAMLEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>pre_softnorm</code></td><td class="mono">[1, 256, 65]</td><td>10.77</td><td class="tick">✓ <span class="qual">converted first</span></td></tr>
+      <tr><td><code>latent</code> <em>(default)</em></td><td class="mono">[1, 256, 65]</td><td>10.77</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/same-l.png?v=1790676718" alt="SAME-L representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/same-l-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="music2latent">
+  <summary><span class="sname">Music2Latent</span>
+    <span class="smeta">consistency autoencoder<span class="sep">·</span>44.1 kHz mono<span class="sep">·</span>
+    2 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>latent</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#music2latent">details</a></p>
+  <pre><code>em.Music2LatentEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>features</code></td><td class="mono">[1, 8192, 65]</td><td>10.77</td><td class="no">—</td></tr>
+      <tr><td><code>latent</code> <em>(default)</em></td><td class="mono">[1, 64, 65]</td><td>10.77</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/music2latent.png?v=1790676718" alt="Music2Latent representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/music2latent-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="dacvae">
+  <summary><span class="sname">DACVAE</span>
+    <span class="smeta">VAE<span class="sep">·</span>48 kHz mono<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>mu</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#dacvae">details</a></p>
+  <pre><code>em.DACVAEEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>mu</code> <em>(default)</em></td><td class="mono">[1, 128, 150]</td><td>25.00</td><td class="tick">✓</td></tr>
+      <tr><td><code>std</code></td><td class="mono">[1, 128, 150]</td><td>25.00</td><td class="no">—</td></tr>
+      <tr><td><code>sample</code></td><td class="mono">[1, 128, 150]</td><td>25.00</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/dacvae.png?v=1790676718" alt="DACVAE representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (mono)</h3>
+      <audio controls preload="none" src="assets/dacvae-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="ace-step-15-vae">
+  <summary><span class="sname">ACE-Step 1.5 VAE</span>
+    <span class="smeta">VAE<span class="sep">·</span>48 kHz stereo<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>mu</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#ace-step-15-vae">details</a></p>
+  <pre><code>em.ACEStep15Encoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>mu</code> <em>(default)</em></td><td class="mono">[1, 64, 150]</td><td>25.00</td><td class="tick">✓</td></tr>
+      <tr><td><code>std</code></td><td class="mono">[1, 64, 150]</td><td>25.00</td><td class="no">—</td></tr>
+      <tr><td><code>sample</code></td><td class="mono">[1, 64, 150]</td><td>25.00</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/ace-step-15-vae.png?v=1790676718" alt="ACE-Step 1.5 VAE representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/ace-step-15-vae-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="ace-step-v1-music-dcae">
+  <summary><span class="sname">ACE-Step v1 music DCAE</span>
+    <span class="smeta">mel autoencoder + vocoder<span class="sep">·</span>44.1 kHz stereo<span class="sep">·</span>
+    1 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>latent</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#ace-step-v1-music-dcae">details</a></p>
+  <pre><code>em.ACEStepDCAEEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>latent</code> <em>(default)</em></td><td class="mono">[1, 128, 65]</td><td>10.77</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/ace-step-v1-music-dcae.png?v=1790676718" alt="ACE-Step v1 music DCAE representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/ace-step-v1-music-dcae-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="ear-vae-v2-48-khz">
+  <summary><span class="sname">εar-VAE v2 48 kHz</span>
+    <span class="smeta">VAE<span class="sep">·</span>48 kHz stereo<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>mu</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#ear-vae">details</a></p>
+  <pre><code>em.EARVAEEncoder()</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>mu</code> <em>(default)</em></td><td class="mono">[1, 64, 300]</td><td>50.00</td><td class="tick">✓</td></tr>
+      <tr><td><code>std</code></td><td class="mono">[1, 64, 300]</td><td>50.00</td><td class="no">—</td></tr>
+      <tr><td><code>sample</code></td><td class="mono">[1, 64, 300]</td><td>50.00</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/ear-vae-v2-48-khz.png?v=1790676718" alt="εar-VAE v2 48 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/ear-vae-v2-48-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<details class="card" id="ear-vae-441-khz">
+  <summary><span class="sname">εar-VAE 44.1 kHz</span>
+    <span class="smeta">VAE<span class="sep">·</span>44.1 kHz stereo<span class="sep">·</span>
+    3 representations</span></summary>
+  <div class="body">
+  <p class="meta">decodes from <code>mu</code><span class="sep">·</span>
+     <a href="https://github.com/MTAI-HMU/NAC_audio_tools/blob/main/README.md#ear-vae">details</a></p>
+  <pre><code>em.EARVAEEncoder("ear_vae_44k")</code></pre>
+  <table>
+    <thead><tr><th>Representation</th><th>Shape</th><th>fps</th><th>Decodable</th></tr></thead>
+    <tbody>
+      <tr><td><code>mu</code> <em>(default)</em></td><td class="mono">[1, 64, 259]</td><td>43.07</td><td class="tick">✓</td></tr>
+      <tr><td><code>std</code></td><td class="mono">[1, 64, 259]</td><td>43.07</td><td class="no">—</td></tr>
+      <tr><td><code>sample</code></td><td class="mono">[1, 64, 259]</td><td>43.07</td><td class="tick">✓</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/ear-vae-441-khz.png?v=1790676718" alt="εar-VAE 44.1 kHz representations" loading="lazy">
+    <figcaption>Top: the decoded audio as a log-frequency spectrogram, mono mix, on the same dB scale
+    for every model. Below it, each representation of batch item 0, dimensions on the y axis, time on
+    the x axis.</figcaption>
+  </figure>
+  <div class="players">
+    <div class="player"><h3>Decoded (stereo)</h3>
+      <audio controls preload="none" src="assets/ear-vae-441-khz-recon.mp3?v=1790676718"></audio></div>
+  </div>
+  </div>
+</details>
+<footer>
+  Built 2026-09-29 from this repository's <code>utils/encoder_models.py</code>. Plots are
+  <code>EncodedFeature.plot()</code> heatmaps of batch item 0; every clip is decoded from the
+  representation marked <em>default</em>. Source audio is <code>assets/source.wav</code>, a
+  6.0-second excerpt of <code>1_rock_87_beat_4-4.wav</code> from the
+  <a href="https://magenta.tensorflow.org/datasets/groove">Groove MIDI Dataset</a> (CC BY 4.0);
+  reconstructions are MP3 to keep the page small.
+</footer>
+</div>
+<script>
+const cards = document.querySelectorAll("details.card");
+document.getElementById("expand").onclick = () => cards.forEach(c => c.open = true);
+document.getElementById("collapse").onclick = () => cards.forEach(c => c.open = false);
+
+// A link to a collapsed model should open it and scroll to it.
+function openHash() {
+  const el = document.querySelector(location.hash || "#none");
+  if (el && el.tagName === "DETAILS") { el.open = true; el.scrollIntoView(); }
+}
+addEventListener("hashchange", openHash);
+openHash();
+</script>
+</body>
+</html>
