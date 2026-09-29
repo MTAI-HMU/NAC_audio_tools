@@ -63,38 +63,60 @@ and `batch_size` (default 8 for the codecs, 4 for the autoencoders, 1 for SAME-L
 
 ### Shapes and decoding
 
-| Model | Representation | Shape | Decodable |
-| --- | --- | --- | --- |
-| [DAC](#dac) | `encoder_z` | `[B, 1024, T]` | ✓ quantized first |
-| | `latents` | `[B, 72, T]` (9 codebooks × 8) | ✓ quantized first |
-| | `codes` | `[B, 9, T]` | **✓ default** |
-| | `quantized_z` | `[B, 1024, T]` | ✓ |
-| [EnCodec](#encodec) | `encoder_z` | `[B, 128, T]` | ✓ quantized first |
-| | `codes` | `[B, 4, T]` at 32 kHz<br>`[B, 32, T]` at 24 kHz | **✓ default** |
-| | `quantized_z` | `[B, 128, T]` | ✓ |
-| [SNAC](#snac) | `encoder_z` | `[B, 1024, T]` | ✓ quantized first |
-| | `codes` | `[B, 4, T]` (4 levels) | **✓ default** |
-| | `quantized_z` | `[B, 1024, T]` | ✓ |
-| [Stable Audio Open VAE](#sao) | `mu` | `[B, 64, T]` | **✓ default** |
-| | `std` | `[B, 64, T]` | ✗ |
-| | `sample` | `[B, 64, T]` | ✓ |
-| [SAME-L](#same-l) | `pre_softnorm` | `[B, 256, T]` | ✓ normalized first |
-| | `latent` | `[B, 256, T]` | **✓ default** |
-| [Music2Latent](#music2latent) | `features` | `[B, 8192, T]` | ✗ |
-| | `latent` | `[B, 64, T]` | **✓ default** |
-| [DACVAE](#dacvae) | `mu` | `[B, 128, T]` | **✓ default** |
-| | `std` | `[B, 128, T]` | ✗ |
-| | `sample` | `[B, 128, T]` | ✓ |
-| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `mu` | `[B, 64, T]` | **✓ default** |
-| | `std` | `[B, 64, T]` | ✗ |
-| | `sample` | `[B, 64, T]` | ✓ |
-| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `latent` | `[B, 128, T]` (8 × 16, flattened) | **✓ default** |
-| [εar-VAE](#ear-vae) | `mu` | `[B, 64, T]` | **✓ default** |
-| | `std` | `[B, 64, T]` | ✗ |
-| | `sample` | `[B, 64, T]` | ✓ |
+| Model | Representation | Shape | Decodable | min | max | mean | sd |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| [DAC](#dac) | `encoder_z` | `[B, 1024, T]` | ✓ quantized first | −12.42 | 11.92 | 0.01 | 2.50 |
+|  | `latents` | `[B, 72, T]` (9 codebooks × 8) | ✓ quantized first | −13.71 | 13.04 | −0.06 | 2.95 |
+|  | `codes` | `[B, 9, T]` | **✓ default** | 1 | 1023 | — | — |
+|  | `quantized_z` | `[B, 1024, T]` | ✓ | −19.23 | 16.96 | 0.04 | 3.65 |
+| [EnCodec](#encodec) 32 kHz | `encoder_z` | `[B, 128, T]` | ✓ quantized first | −12.57 | 15.25 | −0.12 | 2.57 |
+|  | `codes` | `[B, 4, T]` | **✓ default** | 8 | 2044 | — | — |
+|  | `quantized_z` | `[B, 128, T]` | ✓ | −12.57 | 13.74 | −0.10 | 2.46 |
+| [EnCodec](#encodec) 24 kHz | `encoder_z` | `[B, 128, T]` | ✓ quantized first | −16.48 | 20.81 | −0.53 | 4.51 |
+|  | `codes` | `[B, 32, T]` | **✓ default** | 0 | 1023 | — | — |
+|  | `quantized_z` | `[B, 128, T]` | ✓ | −16.65 | 20.77 | −0.53 | 4.51 |
+| [SNAC](#snac) 44 kHz | `encoder_z` | `[B, 1024, T]` | ✓ quantized first | −44.36 | 67.42 | −0.01 | 2.94 |
+|  | `codes` | `[B, 4, T]` (4 levels) | **✓ default** | 9 | 4085 | — | — |
+|  | `quantized_z` | `[B, 1024, T]` | ✓ | −26.76 | 24.43 | −0.01 | 2.46 |
+| [SNAC](#snac) 32 kHz | `encoder_z` | `[B, 1024, T]` | ✓ quantized first | −34.78 | 71.89 | −0.03 | 2.88 |
+|  | `codes` | `[B, 4, T]` (4 levels) | **✓ default** | 2 | 4090 | — | — |
+|  | `quantized_z` | `[B, 1024, T]` | ✓ | −26.42 | 24.23 | −0.02 | 2.45 |
+| [Stable Audio Open VAE](#sao) | `mu` | `[B, 64, T]` | **✓ default** | −3.82 | 4.75 | −0.06 | 0.86 |
+|  | `std` | `[B, 64, T]` | ✗ | 0.0059 | 0.2401 | 0.0840 | 0.042 |
+|  | `sample` | `[B, 64, T]` | ✓ | −3.82 | 4.75 | −0.06 | 0.87 |
+| [SAME-L](#same-l) | `pre_softnorm` | `[B, 256, T]` | ✓ normalized first | −0.27 | 0.28 | 0.00 | 0.057 |
+|  | `latent` | `[B, 256, T]` | **✓ default** | −3.13 | 3.14 | −0.03 | 0.63 |
+| [Music2Latent](#music2latent) | `features` | `[B, 8192, T]` | ✗ | −9.21 | 7.83 | −0.02 | 0.98 |
+|  | `latent` | `[B, 64, T]` | **✓ default** | −3.49 | 3.21 | −0.14 | 0.99 |
+| [DACVAE](#dacvae) | `mu` | `[B, 128, T]` | **✓ default** | −3.16 | 2.81 | 0.04 | 0.67 |
+|  | `std` | `[B, 128, T]` | ✗ | 0.0017 | 0.0072 | 0.0035 | 0.001 |
+|  | `sample` | `[B, 128, T]` | ✓ | −3.17 | 2.81 | 0.04 | 0.67 |
+| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `mu` | `[B, 64, T]` | **✓ default** | −3.24 | 2.86 | −0.06 | 0.83 |
+|  | `std` | `[B, 64, T]` | ✗ | 0.00011 | 0.00196 | 0.00036 | <0.001 |
+|  | `sample` | `[B, 64, T]` | ✓ | −3.24 | 2.86 | −0.06 | 0.83 |
+| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `latent` | `[B, 128, T]` (8 × 16, flattened) | **✓ default** | −3.19 | 2.06 | −0.17 | 0.72 |
+| [εar-VAE](#ear-vae) v2 48 kHz | `mu` | `[B, 64, T]` | **✓ default** | −5.11 | 3.74 | −0.02 | 0.56 |
+|  | `std` | `[B, 64, T]` | ✗ | 0.00002 | 0.00065 | 0.00011 | <0.001 |
+|  | `sample` | `[B, 64, T]` | ✓ | −5.11 | 3.74 | −0.02 | 0.56 |
+| [εar-VAE](#ear-vae) 44.1 kHz | `mu` | `[B, 64, T]` | **✓ default** | −4.12 | 5.71 | 0.05 | 0.89 |
+|  | `std` | `[B, 64, T]` | ✗ | 0.00003 | 0.00082 | 0.00019 | <0.001 |
+|  | `sample` | `[B, 64, T]` | ✓ | −4.12 | 5.71 | 0.05 | 0.89 |
 
 **Shape** is `.tensor.shape`: B clips, D dimensions, T frames at the frame rate (for SNAC, its finest rate).
-Both variants of a model share these shapes, except EnCodec's `codes`.
+
+**min / max / mean / sd** were measured on one 6-second stereo drum clip (`1_rock_87_beat_4-4.wav`, Groove MIDI
+Dataset). Nothing is normalized: every representation is the model's own output on the model's own scale, so
+these are a sanity check for your own features, not fixed bounds. Two things follow from them:
+
+- **Scales are not comparable across models.** εar-VAE sits at sd 0.56 and DAC's `quantized_z` at 3.65, about 6×
+  apart, so standardize per model before feeding several into one downstream model, distance or colour scale.
+- **`codes` are raw codebook indices.** The full range is 0 to codebook size − 1 (1024 for DAC and EnCodec
+  24 kHz, 2048 for EnCodec 32 kHz, 4096 for SNAC); the min and max above are only what this clip used.
+
+The one representation carrying a scaling factor is ACE-Step v1 DCAE's `latent`, which has upstream MusicDCAE's
+shift and scale applied, as `MusicDCAE.encode` returns it. Everything else is the bare encoder output, except
+that `std` is `softplus(scale)`, a standard deviation in natural units rather than the raw parameter. Input
+audio is resampled and padded, never peak- or loudness-normalized.
 
 **Decodable** says what `enc.decode()` does with that representation:
 
@@ -105,64 +127,6 @@ Both variants of a model share these shapes, except EnCodec's `codes`.
 - **✓ normalized first** SAME-L's decoder takes `latent` only. `decode()` first runs `pre_softnorm` through the model's
   SoftNorm, which turns it into `latent`, so the audio is the same as decoding `latent`.
 - **✗** Can't be decoded; `decode()` raises a `ValueError`.
-
-### Value ranges
-
-Nothing is normalized: every representation is the model's own output on the model's own scale. Measured on one
-6-second stereo drum clip (`1_rock_87_beat_4-4.wav`, Groove MIDI Dataset), as a sanity check for your own
-features rather than fixed bounds — other audio moves these numbers.
-
-| Model | Representation | min | max | mean | sd |
-| --- | --- | --- | --- | --- | --- |
-| [DAC](#dac) | `encoder_z` | −12.42 | 11.92 | 0.01 | 2.50 |
-| | `latents` | −13.71 | 13.04 | −0.06 | 2.95 |
-| | `codes` | 1 | 1023 | — | — |
-| | `quantized_z` | −19.23 | 16.96 | 0.04 | 3.65 |
-| [EnCodec](#encodec) 32 kHz | `encoder_z` | −12.57 | 15.25 | −0.12 | 2.57 |
-| | `codes` | 8 | 2044 | — | — |
-| | `quantized_z` | −12.57 | 13.74 | −0.10 | 2.46 |
-| [EnCodec](#encodec) 24 kHz | `encoder_z` | −16.48 | 20.81 | −0.53 | 4.51 |
-| | `codes` | 0 | 1023 | — | — |
-| | `quantized_z` | −16.65 | 20.77 | −0.53 | 4.51 |
-| [SNAC](#snac) 44 kHz | `encoder_z` | −44.36 | 67.42 | −0.01 | 2.94 |
-| | `codes` | 9 | 4085 | — | — |
-| | `quantized_z` | −26.76 | 24.43 | −0.01 | 2.46 |
-| [SNAC](#snac) 32 kHz | `encoder_z` | −34.78 | 71.89 | −0.03 | 2.88 |
-| | `codes` | 2 | 4090 | — | — |
-| | `quantized_z` | −26.42 | 24.23 | −0.02 | 2.45 |
-| [Stable Audio Open VAE](#sao) | `mu` | −3.82 | 4.75 | −0.06 | 0.86 |
-| | `std` | 0.0059 | 0.2401 | 0.0840 | 0.042 |
-| [SAME-L](#same-l) | `pre_softnorm` | −0.27 | 0.28 | 0.00 | 0.057 |
-| | `latent` | −3.13 | 3.14 | −0.03 | 0.63 |
-| [Music2Latent](#music2latent) | `features` | −9.21 | 7.83 | −0.02 | 0.98 |
-| | `latent` | −3.49 | 3.21 | −0.14 | 0.99 |
-| [DACVAE](#dacvae) | `mu` | −3.16 | 2.81 | 0.04 | 0.67 |
-| | `std` | 0.0017 | 0.0072 | 0.0035 | 0.001 |
-| [ACE-Step 1.5 VAE](#ace-step-15-vae) | `mu` | −3.24 | 2.86 | −0.06 | 0.83 |
-| | `std` | 0.00011 | 0.00196 | 0.00036 | <0.001 |
-| [ACE-Step v1 music DCAE](#ace-step-v1-music-dcae) | `latent` | −3.19 | 2.06 | −0.17 | 0.72 |
-| [εar-VAE](#ear-vae) v2 48 kHz | `mu` | −5.11 | 3.74 | −0.02 | 0.56 |
-| | `std` | 0.00002 | 0.00065 | 0.00011 | <0.001 |
-| [εar-VAE](#ear-vae) 44.1 kHz | `mu` | −4.12 | 5.71 | 0.05 | 0.89 |
-| | `std` | 0.00003 | 0.00082 | 0.00019 | <0.001 |
-
-`sample` is left out: it is `mu + std × noise`, and `std` is small enough that its range matches `mu` to two
-decimals everywhere except SAO.
-
-Three things this table shows:
-
-- **Scales differ by model, so latents are not comparable across models.** εar-VAE sits at sd 0.56 and DAC's
-  `quantized_z` at 3.65, about 6× apart. Standardize per model before feeding several into the same downstream
-  model, distance or shared colour scale.
-- **`codes` are raw codebook indices**, not rescaled. The full range is 0 to codebook size − 1: 1024 for DAC and
-  EnCodec 24 kHz, 2048 for EnCodec 32 kHz, 4096 for SNAC. The min and max above are just what this clip used.
-- **`std` is tiny for ACE-Step 1.5 and εar-VAE**, about 0.02–0.05% of `mu`, so their `sample` is nearly `mu`.
-  SAO is the one model with a substantial posterior width, about 10% of `mu`.
-
-The only representation carrying a scaling factor is ACE-Step v1 DCAE's `latent`, which has upstream MusicDCAE's
-shift and scale applied, matching what `MusicDCAE.encode` returns. Everything else is the bare encoder output,
-except that `std` is `softplus(scale)`, the standard deviation in natural units rather than the raw parameter.
-Audio going in is resampled and padded, never peak- or loudness-normalized.
 
 ## API
 
